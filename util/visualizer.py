@@ -66,7 +66,12 @@ class Visualizer:
             # Only initialize wandb on main process (rank 0)
             if not dist.is_initialized() or dist.get_rank() == 0:
                 self.wandb_project_name = getattr(opt, "wandb_project_name", "CycleGAN-and-pix2pix")
-                self.wandb_run = wandb.init(project=self.wandb_project_name, name=opt.name, config=opt) if not wandb.run else wandb.run
+                run_name = getattr(opt, "wandb_run_name", "") or opt.name
+                init_kwargs = dict(project=self.wandb_project_name, name=run_name, config=opt)
+                wandb_dir = getattr(opt, "wandb_dir", "")
+                if isinstance(wandb_dir, str) and len(wandb_dir) > 0:
+                    init_kwargs["dir"] = wandb_dir
+                self.wandb_run = wandb.init(**init_kwargs) if not wandb.run else wandb.run
                 self.wandb_run._label(repo="CycleGAN-and-pix2pix")
             else:
                 self.wandb_run = None
@@ -76,6 +81,11 @@ class Visualizer:
             self.img_dir = self.web_dir / "images"
             print(f"create web directory {self.web_dir}...")
             util.mkdirs([self.web_dir, self.img_dir])
+
+        # Ensure checkpoints/<name> exists even when HTML is disabled
+        ckpt_dir = Path(opt.checkpoints_dir) / opt.name
+        util.mkdirs(ckpt_dir)
+
         # create a logging file to store training losses
         self.log_name = Path(opt.checkpoints_dir) / opt.name / "loss_log.txt"
         with open(self.log_name, "a") as log_file:
@@ -166,3 +176,11 @@ class Visualizer:
         if local_rank == 0:
             with open(self.log_name, "a") as log_file:
                 log_file.write(f"{message}\n")  # save the message
+
+    def close(self):
+        """Close resources (e.g., finish wandb run)."""
+        if self.use_wandb:
+            try:
+                wandb.finish()
+            except Exception:
+                pass

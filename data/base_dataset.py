@@ -70,6 +70,12 @@ def get_params(opt, size):
     elif opt.preprocess == "scale_width_and_crop":
         new_w = opt.load_size
         new_h = opt.load_size * h // w
+    elif opt.preprocess == "resize_rect":
+        # When using rectangular resize, use explicit target sizes
+        # so that cropping (if ever combined) samples within bounds.
+        if getattr(opt, "load_width", 0) > 0 and getattr(opt, "load_height", 0) > 0:
+            new_w = opt.load_width
+            new_h = opt.load_height
 
     x = random.randint(0, np.maximum(0, new_w - opt.crop_size))
     y = random.randint(0, np.maximum(0, new_h - opt.crop_size))
@@ -83,7 +89,15 @@ def get_transform(opt, params=None, grayscale=False, method=transforms.Interpola
     transform_list = []
     if grayscale:
         transform_list.append(transforms.Grayscale(1))
-    if "resize" in opt.preprocess:
+    # Handle resizing modes explicitly to avoid substring clashes with 'resize_rect'
+    if opt.preprocess == "resize_rect":
+        # Expect explicit load_height and load_width
+        lh = getattr(opt, "load_height", 0)
+        lw = getattr(opt, "load_width", 0)
+        if lh <= 0 or lw <= 0:
+            raise ValueError("preprocess=resize_rect requires --load_height and --load_width > 0")
+        transform_list.append(transforms.Resize((lh, lw), method))
+    elif opt.preprocess == "resize_and_crop":
         osize = [opt.load_size, opt.load_size]
         transform_list.append(transforms.Resize(osize, method))
     elif "scale_width" in opt.preprocess:

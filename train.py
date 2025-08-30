@@ -84,4 +84,9 @@ if __name__ == "__main__":
 
         print(f"End of epoch {epoch} / {opt.n_epochs + opt.n_epochs_decay} \t Time Taken: {time.time() - epoch_start_time:.0f} sec")
 
+    # Close visualizer resources (e.g., finish wandb run)
+    try:
+        visualizer.close()
+    except Exception:
+        pass
     cleanup_ddp()
