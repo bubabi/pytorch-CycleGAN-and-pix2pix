@@ -1,13 +1,14 @@
 python train.py \
-  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/driving_rgb2domain2_cyclegan \
-  --name driving_rgb2domain2_cyclegan_rect \
+  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/str_driving_rgb2domain4_cyclegan \
+  --name str_driving_rgb2domain4_cyclegan_rect \
   --model cycle_gan \
   --preprocess resize_rect --load_width 400 --load_height 300 \
   --display_freq 200 --print_freq 100 --update_html_freq 1000 \
   --save_latest_freq 1000 --save_epoch_freq 5 \
-  --n_epochs 20 --n_epochs_decay 10 \
-  --use_wandb --wandb_project_name cyclegan_v1 \
-  --wandb_run_name "driving_rect_domain2_20e_10d" \
+  --n_epochs 70 \
+  --no_html \
+  --use_wandb --wandb_project_name str_cyclegan_v1 \
+  --wandb_run_name "str_driving_rect_domain4_70e" \
   --wandb_dir /home/burak/development/pytorch-CycleGAN-and-pix2pix/logs
 
 # v3
@@ -65,16 +66,15 @@ python train.py \
 
 # test
 python test.py \
-  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/driving_rgb2domain2_cyclegan/testA \
-  --name driving_rgb2domain2_cyclegan_rect_v3 \
+  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/str_driving_rgb2domain4_cyclegan/testA \
+  --name str_driving_rgb2domain4_cyclegan_rect\
   --model test \
   --model_suffix _A \
   --direction AtoB \
-  --epoch latest \
+  --epoch 80 \
   --num_test 400 \
   --preprocess resize_rect \
-  --ngf 128 --ndf 128 \
-  --load_width 400 --load_height 300 \
+  --load_width 800 --load_height 600 \
   --results_dir ./results \
   --no_dropout \
   --eval
@@ -89,9 +89,10 @@ Identity test: idt_A should look very close to real_A
 Issues: If idt_A is distorted, the model might be overfitting or the learning rate is too high
 
 # prepare datasets
-python scripts/prepare_jpg_datasets.py \
-  --source-root jpg_dataset \
+python scripts/prepare_datasets.py \
+  --source-root strong_dataset \
   --output-root datasets \
   --camera rgb_front \
-  --mode pix2pix cyclegan \
-  --same-train-test
+  --mode cyclegan \
+  --same-train-test \
+  --domains 1

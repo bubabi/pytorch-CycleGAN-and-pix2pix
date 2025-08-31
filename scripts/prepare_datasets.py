@@ -124,7 +124,7 @@ def concat_AB_and_save(names: List[str], A_dir: Path, B_dir: Path, out_dir: Path
 def derive_dataset_name(src_domain_dir: Path) -> str:
     # src_domain_dir.name like 'domain_2' -> 'domain2'
     nm = src_domain_dir.name.replace("_", "")  # domain_2 -> domain2
-    return f"driving_rgb2{nm}"
+    return f"str_driving_rgb2{nm}"
 
 
 def main():

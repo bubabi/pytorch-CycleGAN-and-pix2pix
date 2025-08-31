@@ -4,8 +4,8 @@ from PIL import Image
 import numpy as np
 
 # Set your paths
-input_dir = "/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/driving_rgb2domain2_cyclegan_rect_v3/test_latest/images"
-output_gif = "/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/comparison_v3.gif"
+input_dir = "/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_driving_rgb2domain1_cyclegan_rect/test_70/images"
+output_gif = "/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_comparison_v1_epoch_70.gif"
 
 # Get all real and fake images
 real_images = sorted([f for f in os.listdir(input_dir) if f.endswith('_real.png')])
@@ -47,8 +47,8 @@ for i, (real_img, fake_img) in enumerate(zip(real_images, fake_images)):
         except:
             font = ImageFont.load_default()
         
-        draw.text((10, 10), "Original", (255, 255, 255), font=font)
-        draw.text((real.width + 10, 10), "Generated", (255, 255, 255), font=font)
+        draw.text((10, 10), "clear", (255, 255, 255), font=font)
+        draw.text((real.width + 10, 10), "foggy", (255, 255, 255), font=font)
         
         # Convert to numpy array for imageio
         frames.append(np.array(combined))

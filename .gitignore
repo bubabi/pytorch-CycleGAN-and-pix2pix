@@ -43,6 +43,7 @@ test/data/legacy_serialized.pt
 .idea
 
 jpg_dataset/
+strong_dataset/
 
 #Ignore Wandb
 wandb/
