@@ -1,78 +1,25 @@
 python train.py \
-  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/str_driving_rgb2domain4_cyclegan \
-  --name str_driving_rgb2domain4_cyclegan_rect \
+  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/str_driving_rgb2domain0_cyclegan \
+  --name str_driving_rgb2domain0_cyclegan_rect \
   --model cycle_gan \
-  --preprocess resize_rect --load_width 400 --load_height 300 \
-  --display_freq 200 --print_freq 100 --update_html_freq 1000 \
-  --save_latest_freq 1000 --save_epoch_freq 5 \
-  --n_epochs 70 \
+  --preprocess resize_rect --load_width 800 --load_height 600 \
+  --display_freq 500 --print_freq 500 \
+  --save_latest_freq 10000 --save_epoch_freq 10 \
+  --n_epochs 80 --n_epochs_decay 10 \
   --no_html \
   --use_wandb --wandb_project_name str_cyclegan_v1 \
-  --wandb_run_name "str_driving_rect_domain4_70e" \
-  --wandb_dir /home/burak/development/pytorch-CycleGAN-and-pix2pix/logs
-
-# v3
-
-python train.py \
-  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/driving_rgb2domain2_cyclegan \
-  --name driving_rgb2domain2_cyclegan_rect_v3 \
-  --model cycle_gan \
-  --preprocess resize_rect --load_width 400 --load_height 300 \
-  --display_freq 200 --print_freq 100 --update_html_freq 2000 \
-  --save_latest_freq 2000 --save_epoch_freq 10 \
-  --n_epochs 100 --n_epochs_decay 50 \
-  --ngf 128 --ndf 128 \
-  --no_html \
-  --use_wandb --wandb_project_name cyclegan_v3 \
-  --wandb_run_name "driving_rect_v3_128f_100e_50d" \
-  --wandb_dir /home/burak/development/pytorch-CycleGAN-and-pix2pix/logs
-
-# complex
-
-python train.py \
-  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/driving_rgb2domain2_cyclegan \
-  --name driving_rgb2domain2_cyclegan_rect_amp_fast \
-  --model cycle_gan \
-  --preprocess resize_rect,flip --load_width 400 --load_height 300 \
-  --display_freq 500 --print_freq 100 --update_html_freq 2000 \
-  --save_latest_freq 5000 --save_epoch_freq 10 \
-  --ngf 128 --ndf 128 --netG resnet_9blocks \
-  --n_epochs 100 --n_epochs_decay 50 \
-  --amp \
-  --no_html \
-  --use_wandb --wandb_project_name cyclegan_v2 \
-  --wandb_run_name "driving_rect_amp_fast_128f_9b_400x300" \
-  --wandb_dir /home/burak/development/pytorch-CycleGAN-and-pix2pix/logs
-
-# pix2pix
-
-python train.py \
-  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/driving_rgb2domain2 \
-  --name driving_rgb2domain2_pix2pix \
-  --model pix2pix \
-  --direction AtoB \
-  --preprocess resize_rect \
-  --load_width 400 --load_height 300 \
-  --n_epochs 100 --n_epochs_decay 100 \
-  --batch_size 4 \
-  --save_epoch_freq 5 \
-  --ngf 128 \
-  --ndf 128 \
-  --netD n_layers \
-  --n_layers_D 4 \
-  --use_wandb --wandb_project_name pix2pix_v1 \
-  --wandb_run_name "driving_rect_v3_128f_100e_100d" \
+  --wandb_run_name "str_driving_rect_domain0_80e_10d" \
   --wandb_dir /home/burak/development/pytorch-CycleGAN-and-pix2pix/logs
 
 # test
 python test.py \
-  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/str_driving_rgb2domain4_cyclegan/testA \
-  --name str_driving_rgb2domain4_cyclegan_rect\
+  --dataroot /home/burak/development/pytorch-CycleGAN-and-pix2pix/datasets/str_driving_rgb2domain0_cyclegan/testA \
+  --name str_driving_rgb2domain0_cyclegan_rect\
   --model test \
   --model_suffix _A \
   --direction AtoB \
-  --epoch 80 \
-  --num_test 400 \
+  --epoch 60 \
+  --num_test 100 \
   --preprocess resize_rect \
   --load_width 800 --load_height 600 \
   --results_dir ./results \
@@ -96,3 +43,28 @@ python scripts/prepare_datasets.py \
   --mode cyclegan \
   --same-train-test \
   --domains 1
+
+## generate_overview_grid
+
+python generate_overview_grid.py \
+  --domain "D1:/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_driving_rgb2domain1_cyclegan_rect/test_70/images" \
+  --domain "D2:/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_driving_rgb2domain2_cyclegan_rect/test_90/images" \
+  --domain "D4:/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_driving_rgb2domain4_cyclegan_rect/test_70/images" \
+  --original_dir /home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_driving_rgb2domain1_cyclegan_rect/test_70/images \
+  --labels_json /home/burak/development/pytorch-CycleGAN-and-pix2pix/domain_aware_diffusion_prompts.json \
+  --labels_json_key main_prompt \
+  --labels_keys 1 2 4 \
+  --columns 3 \
+  --width 1920 \
+  --fps 8 \
+  --max_frames 400 \
+  --label_max_lines 0 \
+  --caption_align center \
+  --font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
+  --output_webm /home/burak/development/pytorch-CycleGAN-and-pix2pix/results/overview_domains_1_2_4.webm \
+  --output_frames_dir /home/burak/development/pytorch-CycleGAN-and-pix2pix/results/overview_frames
+
+
+## copy from runpod
+
+scp -P 34517 -i ~/.ssh/id_ed25519 root@157.157.221.29:/workspace/pytorch-CycleGAN-and-pix2pix/checkpoints/str_driving_rgb2domain0_cyclegan_rect/60_net_G_A.pth /Users/beo/Downloads/

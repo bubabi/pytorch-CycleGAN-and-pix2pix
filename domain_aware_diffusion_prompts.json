@@ -1,0 +1,52 @@
+{
+  "0": {
+    "main_prompt": "(heavy rain:1.5), wet reflective roads, (dense dark clouds:1.2), (thick rain drops:1.3), mild surface mist, (storm ambiance:1.4)",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "rainy city daytime"
+  },
+  "1": {
+    "main_prompt": "dense morning (fog:1.2), muted daylight, low visibility, diffused soft shadows, damp road surfaces, (cool atmospheric haze:1.2), mist ambiance",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "foggy city daytime"
+  },
+  "2": {
+    "main_prompt": "(snowfall:1.2), thick snow accumulation, icy roads, (winter dark sky:1.2), cold bluish ambient light, frosty atmosphere, light swirling snowflakes",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "snowy city daytime"
+  },
+  "3": {
+    "main_prompt": "(nighttime:1.3), cityscape, wet glistening roads, neon reflections, (deep dark sky:1.2), scattered puddles, humidity, vibrant artificial lighting",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "wet city night"
+  },
+  "4": {
+    "main_prompt": "(blazing sunset:1.3), dramatic orange-pink sky, intense backlighting, elongated deep shadows, dry sunlit roads, vibrant saturated atmosphere, radiant evening glow",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "sunset urban glow"
+  },
+  "5": {
+    "main_prompt": "(desert dunes:1.5), sun-bleached asphalt, (camels:1.5), shimmering heat haze, wind-blown sand, sparse shrubs, (harsh sunlight:1.2), mirage shimmer",
+    "negative_prompt": "cars, vehicles, motorbikes, bikes, low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "desert camels daytime"
+  },
+  "6": {
+    "main_prompt": "(spring cherry blossoms:1.4), petals swirling in air, soft pastel daylight, clean dry asphalt, gentle breeze, (tree-lined boulevard:1.2), delicate pink canopy, subtle pollen haze",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "spring cherry blossom city"
+  },
+  "7": {
+    "main_prompt": "(neon city festival:1.4), lantern strings across street, confetti drift, (rain-slick roads:1.3), dense signs and holograms, (vivid magenta-cyan lighting:1.3), moody steam vents",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "cyberpunk neon festival night"
+  },
+  "8": {
+    "main_prompt": "(tropical monsoon rain:1.5), lush jungle roadside, large palm leaves, (monkeys near shoulder:1.5), heavy droplets, puddle splashes, (humid mist:1.3), dark storm clouds",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "tropical monsoon jungle road"
+  },
+  "9": {
+    "main_prompt": "(coastal road:1.2), crashing waves spraying seawall, (salt spray:1.3), wet reflective asphalt, sea gulls, (stormy sky:1.3), wind-driven foam, distant lighthouse glow",
+    "negative_prompt": "low quality, bad quality, blurry, text, cartoon, anime, illustration, painting, drawing, unrealistic, deformed, grainy, low-resolution, oversaturated, watermark, signature",
+    "domain_keywords": "coastal storm seaside"
+  }
+}
