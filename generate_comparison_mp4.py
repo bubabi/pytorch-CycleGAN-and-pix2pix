@@ -5,8 +5,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 def main():
     # Set your paths
-    input_dir = "/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_driving_rgb2domain0_cyclegan_rect/test_60/images"
-    output_mp4 = "/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_comparison_v1_domain0_epoch_60.mp4"
+    input_dir = "/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_driving_rgb2domain5_cyclegan_rect_400x300/test_70/images"
+    output_mp4 = "/home/burak/development/pytorch-CycleGAN-and-pix2pix/results/str_comparison_v1_domain5_epoch_70.mp4"
 
     # Get all real and fake images
     real_images = sorted([f for f in os.listdir(input_dir) if f.endswith('_real.png')])

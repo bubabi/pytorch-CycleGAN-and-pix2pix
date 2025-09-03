@@ -266,6 +266,7 @@ class Layout:
                  tile_w: int,
                  tile_h: int,
                  caption_box_h: int,
+                 orig_caption_box_h: int,
                  orig_alloc_w: int,
                  orig_h: int,
                  sep_line_th: int,
@@ -281,6 +282,7 @@ class Layout:
         self.tile_w = tile_w
         self.tile_h = tile_h
         self.caption_box_h = caption_box_h
+        self.orig_caption_box_h = orig_caption_box_h
         self.orig_alloc_w = orig_alloc_w
         self.orig_h = orig_h
         self.sep_line_th = sep_line_th
@@ -298,10 +300,12 @@ def compute_layout(
     orig_width_ratio: float,
     bg_color: Tuple[int, int, int],
     captions_lines: List[List[str]],
+    original_caption_lines: Optional[List[str]],
     font: ImageFont.ImageFont,
     line_spacing: int,
     ref_orig_img: Image.Image,
     ref_domain_fake_img: Image.Image,
+    sep_line_th: int,
 ) -> Layout:
     # content width
     content_w = width - 2 * margin
@@ -329,6 +333,13 @@ def compute_layout(
     caption_pad_y = 8
     caption_box_h = caption_pad_y * 2 + max_lines * line_h + (max_lines - 1) * line_spacing
 
+    # original caption box height
+    if original_caption_lines and len(original_caption_lines) > 0:
+        orig_cap_lines = len(original_caption_lines)
+        orig_caption_box_h = caption_pad_y * 2 + orig_cap_lines * line_h + (orig_cap_lines - 1) * line_spacing
+    else:
+        orig_caption_box_h = 0
+
     # original allocation
     orig_width_ratio = float(max(0.3, min(1.0, orig_width_ratio)))
     orig_alloc_w = int(round(orig_width_ratio * content_w))
@@ -336,11 +347,12 @@ def compute_layout(
     ow, oh = ref_orig_img.size
     ref_top_h = int(round(orig_alloc_w * (oh / max(1, ow))))
 
-    sep_line_th = 1
+    # clamp separator thickness to non-negative
+    sep_line_th = max(0, int(sep_line_th))
     # grid total height (tiles + caption boxes + gaps between rows)
     grid_h = rows * (tile_h + caption_box_h) + (rows - 1) * gap
 
-    canvas_h = margin + ref_top_h + sep_line_th + gap + grid_h + margin
+    canvas_h = margin + ref_top_h + orig_caption_box_h + sep_line_th + gap + grid_h + margin
 
     # original X such that centered within content width
     orig_x = margin + (content_w - orig_alloc_w) // 2
@@ -357,6 +369,7 @@ def compute_layout(
         tile_w=tile_w,
         tile_h=tile_h,
         caption_box_h=caption_box_h,
+        orig_caption_box_h=orig_caption_box_h,
         orig_alloc_w=orig_alloc_w,
         orig_h=ref_top_h,
         sep_line_th=sep_line_th,
@@ -381,6 +394,8 @@ def compose_frame(
     line_spacing: int,
     original_path: str,
     fake_paths_per_domain: List[str],
+    original_caption_lines: Optional[List[str]] = None,
+    original_caption_align: str = 'center',
 ) -> Image.Image:
     # Base canvas
     canvas = Image.new('RGB', (layout.canvas_w, layout.canvas_h), color=bg_color)
@@ -395,11 +410,31 @@ def compose_frame(
     orig_lb = letterbox(orig_img, layout.orig_alloc_w, layout.orig_h, bg_color)
     canvas.paste(orig_lb, (layout.orig_x, layout.top_y))
 
-    # Separator line below original
+    # Optional caption under original
     sep_y = layout.top_y + layout.orig_h
-    # A light line: blend towards white-ish
-    line_color = tuple(min(255, c + 40) for c in bg_color)
-    draw.rectangle([layout.margin, sep_y, layout.margin + layout.content_w, sep_y + layout.sep_line_th - 1], fill=line_color)
+    if original_caption_lines and len(original_caption_lines) > 0 and layout.orig_caption_box_h > 0:
+        cap_x0 = layout.orig_x
+        cap_y0 = sep_y
+        cap_x1 = layout.orig_x + layout.orig_alloc_w
+        cap_y1 = cap_y0 + layout.orig_caption_box_h
+        # Use background color for caption box to keep text visible regardless of theme
+        draw.rectangle([cap_x0, cap_y0, cap_x1, cap_y1], fill=bg_color)
+
+        cy = cap_y0 + 8
+        for line in original_caption_lines:
+            if original_caption_align == 'center':
+                tw = text_width(draw, line, font)
+                cx = layout.orig_x + (layout.orig_alloc_w - tw) // 2
+            else:  # left
+                cx = layout.orig_x + caption_pad_x
+            draw.text((cx, cy), line, font=font, fill=caption_color)
+            lh = text_height(draw, line, font)
+            cy += lh + line_spacing
+        sep_y = cap_y1
+    # Optional separator line
+    if layout.sep_line_th > 0:
+        line_color = tuple(min(255, c + 40) for c in bg_color)
+        draw.rectangle([layout.margin, sep_y, layout.margin + layout.content_w, sep_y + layout.sep_line_th - 1], fill=line_color)
 
     # Grid origin (top-left of first tile)
     grid_origin_y = sep_y + layout.sep_line_th + layout.gap
@@ -408,7 +443,17 @@ def compose_frame(
     for idx, fake_path in enumerate(fake_paths_per_domain):
         col = idx % layout.columns
         row = idx // layout.columns
-        x = layout.margin + col * (layout.tile_w + layout.gap)
+
+        # Center the last row if it is not full
+        total_items = len(fake_paths_per_domain)
+        row_offset = 0
+        if row == layout.rows - 1:
+            last_row_items = total_items - (layout.rows - 1) * layout.columns
+            if 0 < last_row_items < layout.columns:
+                row_width = last_row_items * layout.tile_w + (last_row_items - 1) * layout.gap
+                row_offset = (layout.content_w - row_width) // 2
+
+        x = layout.margin + row_offset + col * (layout.tile_w + layout.gap)
         y = grid_origin_y + row * (layout.tile_h + layout.caption_box_h + layout.gap)
 
         try:
@@ -422,7 +467,8 @@ def compose_frame(
         # Caption box
         cap_x0, cap_y0 = x, y + layout.tile_h
         cap_x1, cap_y1 = x + layout.tile_w, cap_y0 + layout.caption_box_h
-        draw.rectangle([cap_x0, cap_y0, cap_x1, cap_y1], fill=(0, 0, 0))
+        # Match the overall background color so caption text remains visible with custom themes
+        draw.rectangle([cap_x0, cap_y0, cap_x1, cap_y1], fill=bg_color)
 
         # Draw wrapped lines
         lines = captions_lines[idx] if idx < len(captions_lines) else [""]
@@ -471,13 +517,17 @@ def main():
     parser.add_argument('--gap', type=int, default=20)
     parser.add_argument('--columns', type=int, default=0, help='0 = one row with all domains')
     parser.add_argument('--tile_height', type=int, default=0, help='0 = auto from aspect')
-    parser.add_argument('--orig_width_ratio', type=float, default=0.8)
+    parser.add_argument('--orig_width_ratio', type=float, default=0.6)
     parser.add_argument('--bg', type=str, default='#111111')
     parser.add_argument('--caption_color', type=str, default='#FFFFFF')
     parser.add_argument('--font', type=str, default=None)
-    parser.add_argument('--font_size', type=int, default=20)
+    parser.add_argument('--sep_line_th', type=int, default=1, help='Thickness of separator line under original; 0 disables')
+    parser.add_argument('--font_size', type=int, default=24)
     parser.add_argument('--caption_align', type=str, choices=['left', 'center'], default='center')
     parser.add_argument('--label_max_lines', type=int, default=0, help='0 = unlimited')
+    # Original caption options
+    parser.add_argument('--original_caption', type=str, default=None, help='Optional caption under the original image')
+    parser.add_argument('--original_caption_align', type=str, choices=['left', 'center'], default='center')
 
     # Captions from JSON
     parser.add_argument('--labels_json', type=str, default=None)
@@ -583,6 +633,15 @@ def main():
         wrapped_captions = [truncate_lines_with_ellipsis(lines, dummy_draw, font, max_text_w, args.label_max_lines)
                             for lines in wrapped_captions]
 
+    # Provisional original caption wrapping (if provided)
+    orig_caption_lines = None
+    if args.original_caption and len(args.original_caption.strip()) > 0:
+        orig_alloc_w_initial = int(round(float(args.orig_width_ratio) * content_w_initial))
+        max_text_w_orig = max(1, orig_alloc_w_initial - 2 * caption_pad_x)
+        orig_caption_lines = wrap_text_to_width(args.original_caption.strip(), dummy_draw, font, max_text_w_orig)
+        if args.label_max_lines and args.label_max_lines > 0:
+            orig_caption_lines = truncate_lines_with_ellipsis(orig_caption_lines, dummy_draw, font, max_text_w_orig, args.label_max_lines)
+
     # Compute final layout with accurate caption box height
     layout = compute_layout(
         width=args.width,
@@ -594,10 +653,12 @@ def main():
         orig_width_ratio=args.orig_width_ratio,
         bg_color=bg_color,
         captions_lines=wrapped_captions,
+        original_caption_lines=orig_caption_lines,
         font=font,
         line_spacing=line_spacing,
         ref_orig_img=ref_orig_img,
         ref_domain_fake_img=ref_fake_img,
+        sep_line_th=args.sep_line_th,
     )
 
     # Re-wrap captions in case tile_w changed (rare if same as initial)
@@ -606,6 +667,14 @@ def main():
     if args.label_max_lines and args.label_max_lines > 0:
         wrapped_captions = [truncate_lines_with_ellipsis(lines, dummy_draw, font, max_text_w_final, args.label_max_lines)
                             for lines in wrapped_captions]
+
+    # Final wrap for original caption
+    orig_caption_lines_final = None
+    if args.original_caption and len(args.original_caption.strip()) > 0:
+        max_text_w_orig_final = max(1, layout.orig_alloc_w - 2 * caption_pad_x)
+        orig_caption_lines_final = wrap_text_to_width(args.original_caption.strip(), dummy_draw, font, max_text_w_orig_final)
+        if args.label_max_lines and args.label_max_lines > 0:
+            orig_caption_lines_final = truncate_lines_with_ellipsis(orig_caption_lines_final, dummy_draw, font, max_text_w_orig_final, args.label_max_lines)
 
     # Setup writers
     write_mp4 = args.output_mp4 is not None and len(args.output_mp4) > 0
@@ -700,6 +769,8 @@ def main():
             line_spacing=line_spacing,
             original_path=orig_path,
             fake_paths_per_domain=fake_paths,
+            original_caption_lines=orig_caption_lines_final,
+            original_caption_align=args.original_caption_align,
         )
 
         if write_mp4:
